@@ -1,0 +1,101 @@
+﻿@model IEnumerable<FileUploadAndShow.Models.FileUploadModel>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>File Uploads</h2>
+
+<div class="form-group">
+    <div class="col-md-12">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <table id="fileUploadTable" class="table table-striped table-bordered" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>File Name</th>
+                            <th>File Path</th>
+                            <th>File Extension</th>
+                            <th>Upload Date</th>
+                            <th>Preview</th>
+                            <th>Download</th>
+                            <th>Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var file in Model)
+                        {
+                            <tr>
+                                <td>@file.FileName</td>
+                                <td>@file.FilePath</td>
+                                <td>@file.FileExtension</td>
+                                <td>@file.UploadDate.ToShortDateString()</td>
+                                <td>
+                                    <a href="@Url.Action("PreviewFile", "FileUpload", new { id = file.Id })" target="_blank" class="btn btn-default">
+                                        <span class="glyphicon glyphicon-eye-open"></span> Preview
+                                    </a>
+                                </td>
+                                <td>
+                                    <a href="@Url.Action("DownloadFile", "FileUpload", new { @id = file.Id })" class="btn btn-primary">
+
+                                        <span class="glyphicon glyphicon-download-alt"></span> Download
+                                    </a>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-danger" onclick="deleteFile('@file.Id')">
+                                        <span class="glyphicon glyphicon-trash"></span> Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.22/js/dataTables.bootstrap.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#fileUploadTable').DataTable({
+                "searching": true,
+                "paging": true,
+                "lengthChange": true,
+                "ordering": true,
+                "info": true,
+                "autoWidth": true,
+                "pageLength": 10,
+                "language": {
+                    "search": "Search by any field:"
+                }
+            });
+        });
+
+        function deleteFile(id) {
+            if (confirm("Are you sure you want to delete this file?")) {
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("DeleteFile", "FileUpload")',
+                    data: { id: id },
+                    success: function (result) {
+                        if (result.success) {
+                            window.location.reload();
+                        } else {
+                            alert(result.message);
+                        }
+                    },
+                    error: function () {
+                        alert("An error occurred while deleting the file.");
+                    }
+                });
+            }
+        }
+
+
+    </script>
+}
